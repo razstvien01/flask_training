@@ -28,6 +28,10 @@ class users(db.Model):
 @app.route("/")
 def home():
   return render_template("index.html")
+  
+@app.route("/view")
+def view():
+  return render_template("view.html", values=users.query.all())
 
 @app.route("/login", methods=["POST", "GET"])
 def login():
@@ -37,13 +41,18 @@ def login():
     session["user"] = user
     
     found_user = users.query.filter_by(name=user).first()
+    # found_user = users.query.filter_by(email=).first()
+    
+    # found_user = users.query.filter_by(name=user).delete()
+    # for user in found_user:
+    #   user.delete()
     # check if user exists or not
     if found_user:
       session["email"] = found_user.email
     else:
       usr = users(user, "")
-      db.session.add(user)
-      db.commit()
+      db.session.add(usr)
+      db.session.commit()
     
     flash("Login Successful!")
     return redirect(url_for("user"))
@@ -67,7 +76,7 @@ def user():
       
       found_user = users.query.filter_by(name=user).first()
       found_user.email = email
-      
+      db.session.commit()
       flash("Email was saved!")
     else:
       if "email" in session:
