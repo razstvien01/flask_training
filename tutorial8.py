@@ -19,7 +19,7 @@ db = SQLAlchemy(app)
 class users(db.Model):
   _id = db.Column("id", db.Integer, primary_key=True)
   name = db.Column(db.String(100))
-  email = db.Column(db.String(100))\
+  email = db.Column(db.String(100))
   
   def __init__(self, name, email):
     self.name = name
@@ -35,6 +35,15 @@ def login():
     session.permanent = True #* Permanent sessionn
     user = request.form["nm"]
     session["user"] = user
+    
+    found_user = users.query.filter_by(name=user).first()
+    # check if user exists or not
+    if found_user:
+      session["email"] = found_user.email
+    else:
+      usr = users(user, "")
+      db.session.add(user)
+      db.commit()
     
     flash("Login Successful!")
     return redirect(url_for("user"))
@@ -55,6 +64,10 @@ def user():
     if request.method == "POST":
       email = request.form["email"]
       session["email"] = email
+      
+      found_user = users.query.filter_by(name=user).first()
+      found_user.email = email
+      
       flash("Email was saved!")
     else:
       if "email" in session:
